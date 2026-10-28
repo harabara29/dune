@@ -1,0 +1,526 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Помічник Dune</title>
+<meta name="theme-color" content="#eef1f0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: calm banking-app shell. Faction-tinted pale ground, white rounded cards, heavy left titles, pill chips, floating pill tab bar + round quick button. Every shade derives from --fac. */
+:root{
+  --fac:#71807b;
+  --base:#eef1f0; --card:#ffffff; --fg:#13201d; --muted:#67716e; --line:#e4e8e6;
+  --bg:color-mix(in oklab,var(--fac) 9%,var(--base));
+  --tint:color-mix(in oklab,var(--fac) 22%,var(--card));
+  --tint-2:color-mix(in oklab,var(--fac) 8%,var(--card));
+  --deep:color-mix(in oklab,var(--fac) 70%,#000);
+  --on-deep:#ffffff;
+  --fac-text:color-mix(in oklab,var(--fac) 68%,#000);
+  --navsel:color-mix(in oklab,var(--fac) 10%,#e7eae9);
+  --shadow:0 1px 2px rgba(20,32,29,.05),0 6px 20px rgba(20,32,29,.05);
+  --float:0 8px 28px rgba(20,32,29,.14),0 1px 3px rgba(20,32,29,.08);
+  --must:#9b2f26; --must-bg:#f6e1de; --opt:#25643a; --opt-bg:#dcefe2; --dec:#34479a; --dec-bg:#e1e6f7; --rem:#585f5c; --rem-bg:#e8ebea;
+  --font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --nav:62px; --act:70px; --col:540px; --r:22px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --base:#0e1211; --card:#191e1d; --fg:#edf1ef; --muted:#97a19d; --line:#29302e;
+  --bg:color-mix(in oklab,var(--fac) 12%,var(--base));
+  --tint:color-mix(in oklab,var(--fac) 30%,var(--card));
+  --tint-2:color-mix(in oklab,var(--fac) 12%,var(--card));
+  --deep:color-mix(in oklab,var(--fac) 58%,#fff); --on-deep:#111514;
+  --fac-text:color-mix(in oklab,var(--fac) 52%,#fff);
+  --navsel:color-mix(in oklab,var(--fac) 18%,#262c2a);
+  --shadow:0 1px 2px rgba(0,0,0,.3); --float:0 8px 28px rgba(0,0,0,.5);
+  --must:#f19a90; --must-bg:#3b2320; --opt:#93d3a6; --opt-bg:#1e3326; --dec:#aebcf2; --dec-bg:#222a45; --rem:#b6beba; --rem-bg:#262c2a;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --base:#0e1211; --card:#191e1d; --fg:#edf1ef; --muted:#97a19d; --line:#29302e;
+  --bg:color-mix(in oklab,var(--fac) 12%,var(--base));
+  --tint:color-mix(in oklab,var(--fac) 30%,var(--card));
+  --tint-2:color-mix(in oklab,var(--fac) 12%,var(--card));
+  --deep:color-mix(in oklab,var(--fac) 58%,#fff); --on-deep:#111514;
+  --fac-text:color-mix(in oklab,var(--fac) 52%,#fff);
+  --navsel:color-mix(in oklab,var(--fac) 18%,#262c2a);
+  --shadow:0 1px 2px rgba(0,0,0,.3); --float:0 8px 28px rgba(0,0,0,.5);
+  --must:#f19a90; --must-bg:#3b2320; --opt:#93d3a6; --opt-bg:#1e3326; --dec:#aebcf2; --dec-bg:#222a45; --rem:#b6beba; --rem-bg:#262c2a;
+  color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{touch-action:manipulation;overscroll-behavior-y:none}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;font-weight:500;line-height:1.45;margin:0;-webkit-text-size-adjust:100%;transition:background .3s}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:var(--col);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(var(--nav) + var(--act) + 40px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{font-weight:800;letter-spacing:-.02em;text-wrap:balance;margin:0;line-height:1.12}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;user-select:none;-webkit-user-select:none;border:0;background:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--fac-text);outline-offset:2px}
+.emb{display:block;flex:none}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);transition:background .3s}
+.top .in{max-width:var(--col);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;align-items:center;gap:12px}
+.round{width:46px;height:46px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;flex:none;font-size:20px;font-weight:700}
+.round .emb{width:28px;height:32px}
+.round:active{transform:scale(.95)}
+.top .who{flex:1;min-width:0}
+.top .who b{display:block;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .who span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title{padding-block:8px 14px}
+.title h1{font-size:clamp(27px,8vw,34px)}
+.title .muted{margin-top:6px;font-size:15px}
+
+/* cards */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.stack{display:grid;gap:12px}
+.sec{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.sec>header{display:flex;align-items:center;gap:10px;width:100%;padding:18px 18px 14px;text-align:left}
+.sec>header h3{font-size:17px;flex:1;min-width:0}
+.sec>header .cnt{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.chev{width:20px;height:20px;flex:none;transition:transform .2s;color:var(--fg)}
+.sec.closed .chev{transform:rotate(180deg)}
+.sec.closed>.body{display:none}
+.sec .body{padding:0 0 8px}
+
+/* pills */
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 14px;scroll-snap-type:x proximity}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:none;scroll-snap-align:center;height:38px;padding:0 16px;border-radius:999px;background:color-mix(in oklab,var(--fg) 7%,transparent);font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pill[aria-current="step"],.pill[aria-pressed="true"]{background:var(--tint);color:var(--fac-text)}
+.pill.done::after{content:"✓";color:var(--opt);font-size:12px}
+.pill .n{font-variant-numeric:tabular-nums;opacity:.6}
+
+/* buttons */
+.btn{min-height:50px;padding:0 22px;border-radius:999px;background:var(--deep);color:var(--on-deep);font-weight:800;font-size:15.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn.soft{background:var(--tint);color:var(--fac-text)}
+.btn.sm{min-height:36px;padding:0 14px;font-size:13.5px}
+
+/* spice card */
+.spice{padding:18px;display:grid;gap:12px}
+.spice .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.amount{font-size:38px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.amount small{font-size:16px;font-weight:700;color:var(--muted);margin-left:6px;letter-spacing:0}
+.spice .acts{display:flex;gap:6px}
+.spice .acts button{min-width:46px;height:36px;border-radius:999px;background:var(--tint-2);font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;box-shadow:inset 0 0 0 1px var(--line)}
+.spice .acts button:active{background:var(--tint)}
+
+/* checklist */
+.item label{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:12px 18px;cursor:pointer}
+.item label:active{background:var(--tint-2)}
+.item+.item label{border-top:1px solid var(--line)}
+.item input{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin:1px 0 0;border:2px solid color-mix(in oklab,var(--fg) 25%,transparent);border-radius:8px;display:grid;place-items:center;background:var(--card);transition:background .12s,border-color .12s}
+.item input:checked{background:var(--deep);border-color:var(--deep)}
+.item input:checked::after{content:"";width:6px;height:12px;border:solid var(--on-deep);border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.item .txt{min-width:0;display:grid;gap:6px}
+.item .txt p{font-weight:600;font-size:15.5px}
+.item.checked .txt p{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in oklab,var(--muted) 55%,transparent)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px}
+.t-M{color:var(--must);background:var(--must-bg)} .t-O{color:var(--opt);background:var(--opt-bg)} .t-D{color:var(--dec);background:var(--dec-bg)} .t-R{color:var(--rem);background:var(--rem-bg)}
+.from{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--muted)}
+.from .emb{width:14px;height:16px}
+.cond{font-size:13px;color:var(--muted)}
+.warn{margin-top:12px;padding:12px 16px;border-radius:16px;background:var(--must-bg);color:var(--must);font-weight:700;font-size:14px}
+.hintline{text-align:center;font-size:12.5px;color:var(--muted);padding-top:12px}
+
+/* lists */
+.rowlist .r{display:flex;align-items:center;gap:14px;padding:15px 18px;width:100%;text-align:left}
+.rowlist .r+.r{border-top:1px solid var(--line)}
+.rowlist .r:active{background:var(--tint-2)}
+.rowlist .r .t{flex:1;min-width:0}
+.rowlist .r b{display:block;font-weight:800;font-size:16px}
+.rowlist .r span{display:block;font-size:13.5px;color:var(--muted)}
+.rowlist .r .emb{width:34px;height:39px}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.r[aria-pressed="true"] .dot{border-color:var(--deep);background:var(--deep)}
+.r[aria-pressed="true"] .dot::after{content:"";width:5px;height:10px;border:solid var(--on-deep);border-width:0 2.2px 2.2px 0;transform:translateY(-1px) rotate(45deg)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips .pill .emb{width:18px;height:20px}
+.chips .pill[aria-pressed="false"] .emb{filter:grayscale(1);opacity:.5}
+
+.bullets{list-style:none;margin:0;padding:0 18px 16px;display:grid;gap:12px}
+.bullets li{display:grid;grid-template-columns:8px 1fr;gap:12px;align-items:baseline}
+.bullets li::before{content:"";width:6px;height:6px;border-radius:2px;background:color-mix(in oklab,var(--fg) 30%,transparent);transform:translateY(-2px)}
+.bullets b{font-weight:800}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;padding:0 18px 18px;font-size:15px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700}
+.note{padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,var(--tint-2),var(--tint));font-size:14px;color:var(--fg)}
+
+.counter{padding:0 18px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.counter .v{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;min-width:70px}
+.counter .v small{font-size:15px;color:var(--muted);font-weight:700}
+.counter button{width:46px;height:46px;border-radius:50%;background:var(--tint-2);box-shadow:inset 0 0 0 1px var(--line);font-size:22px;font-weight:700}
+.pips{display:flex;gap:5px;width:100%}
+.pips i{flex:1;max-width:36px;height:6px;border-radius:3px;background:color-mix(in oklab,var(--fg) 10%,transparent)}
+.pips i.on{background:var(--deep)}
+textarea{width:calc(100% - 36px);margin:0 18px 18px;min-height:70px;resize:vertical;border:0;border-radius:14px;background:var(--tint-2);color:var(--fg);font:inherit;font-size:16px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--line)}
+.react{display:block;width:100%;text-align:left;padding:15px 18px}
+.react+.react{border-top:1px solid var(--line)}
+.react b{display:block;font-weight:800}
+.react span{display:block;font-size:13.5px;color:var(--muted)}
+.react:active{background:var(--tint-2)}
+.log li{display:grid;gap:2px}
+.log time{font-size:12px;font-weight:700;color:var(--muted)}
+.empty{padding:20px 18px;color:var(--muted)}
+
+/* docks */
+.dock{position:fixed;left:0;right:0;z-index:6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dock .in{max-width:var(--col);margin:0 auto;display:flex;gap:10px;align-items:center}
+.act{bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom,0px));padding-block:8px}
+.act.solo{bottom:0;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-top:24px;background:linear-gradient(transparent,var(--bg) 40%)}
+.act .btn{flex:1;box-shadow:var(--float)}
+.act .round{box-shadow:var(--float)}
+.navdock{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.nav{flex:1;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav);padding:5px;border-radius:999px;background:var(--card);box-shadow:var(--float)}
+.nav button{border-radius:999px;display:grid;justify-items:center;align-content:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted);position:relative}
+.nav svg{width:22px;height:22px}
+.nav button[aria-selected="true"]{background:var(--navsel);color:var(--fg)}
+.nav .badge{position:absolute;top:5px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--deep);color:var(--on-deep);font-size:10px;line-height:16px;font-variant-numeric:tabular-nums}
+.quick{width:var(--nav);height:var(--nav);border-radius:50%;background:var(--card);box-shadow:var(--float);display:grid;place-items:center;flex:none;color:var(--fac-text)}
+.quick svg{width:24px;height:24px}
+.quick[aria-selected="true"]{background:var(--deep);color:var(--on-deep)}
+
+.panel{padding:16px 18px;display:grid;gap:12px;margin-bottom:12px}
+.panel .row{display:flex;flex-wrap:wrap;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + var(--act) + 30px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PHASES=[
+  {n:0,short:'Підготовка',name:'Підготовка'},
+  {n:1,short:'Storm',name:'Storm'},
+  {n:2,short:'Spice Blow',name:'Spice Blow & Nexus'},
+  {n:3,short:'Charity',name:'CHOAM Charity'},
+  {n:4,short:'Bidding',name:'Bidding'},
+  {n:5,short:'Revival',name:'Revival'},
+  {n:6,short:'Shipment',name:'Shipment & Movement'},
+  {n:7,short:'Battle',name:'Battle'},
+  {n:8,short:'Collection',name:'Spice Collection'},
+  {n:9,short:'Mentat',name:'Mentat Pause'}
+];
+const pname=n=>n===0?'Підготовка':`${n}. ${PHASES[n].name}`;
+const TYPES={M:"Обов'язково",O:'Можливість',D:'Рішення',R:'Нагадування'};
+
+// Original heraldic marks drawn for this app. s = symbol colour, c = field colour.
+const SYM={
+  atreides:(s,c)=>`<polygon fill="${s}" points="31,27 6,17 10,27 15,29 9,35 19,35 14,41 27,37"/><polygon fill="${s}" points="33,27 58,17 54,27 49,29 55,35 45,35 50,41 37,37"/><circle fill="${s}" cx="32" cy="22" r="5"/><polygon fill="${s}" points="30,25 34,25 37,46 32,58 27,46"/><polygon fill="${c}" points="31,19 33,19 32,23"/>`,
+  harkonnen:(s,c)=>`<rect fill="${s}" x="15" y="13" width="34" height="7" rx="2"/>${[20,32,44].map(x=>`<path fill="${s}" d="M${x-5} 20 Q${x+9} 36 ${x-1} 55 Q${x+2} 38 ${x-5} 20Z"/><path fill="${s}" d="M${x-5} 20 h7 q2 6 0 10 z"/>`).join('')}`,
+  emperor:(s,c)=>`<polygon fill="${s}" points="14,44 14,23 23,33 32,15 41,33 50,23 50,44"/><rect fill="${s}" x="14" y="46" width="36" height="6" rx="1"/><circle fill="${s}" cx="14" cy="21" r="3"/><circle fill="${s}" cx="50" cy="21" r="3"/><circle fill="${s}" cx="32" cy="13" r="3"/><circle fill="${c}" cx="32" cy="36" r="3.5"/>`,
+  fremen:(s,c)=>`<circle fill="${s}" cx="15" cy="20" r="7"/><circle fill="${c}" cx="18" cy="18" r="6"/><circle fill="${s}" cx="49" cy="20" r="5"/><circle fill="${c}" cx="51" cy="18.5" r="4.3"/><path fill="${s}" d="M32 12 C40 26 39 42 32 52 C25 42 24 26 32 12Z"/><rect fill="${s}" x="24" y="52" width="16" height="3" rx="1"/><rect fill="${s}" x="29.5" y="55" width="5" height="8" rx="1"/>`,
+  guild:(s,c)=>`<ellipse cx="32" cy="35" rx="23" ry="9" fill="none" stroke="${s}" stroke-width="3.2" transform="rotate(-22 32 35)"/><circle fill="${s}" cx="32" cy="35" r="8"/><circle fill="${c}" cx="34" cy="33" r="3"/><circle fill="${s}" cx="52" cy="25" r="3.4"/>`,
+  bg:(s,c)=>`<path fill="${s}" d="M8 36 Q32 14 56 36 Q32 58 8 36Z"/><circle fill="${c}" cx="32" cy="36" r="9"/><circle fill="${s}" cx="32" cy="36" r="3.6"/><path fill="${s}" d="M32 9 l3 6 h-6z"/><path fill="${s}" d="M32 63 l3 -6 h-6z"/>`,
+  ixians:(s,c)=>`${Array.from({length:8},(_,i)=>`<rect fill="${s}" x="28.5" y="15" width="7" height="9" rx="1" transform="rotate(${i*45} 32 36)"/>`).join('')}<circle fill="${s}" cx="32" cy="36" r="15"/><circle fill="${c}" cx="32" cy="36" r="6.5"/>`,
+  tleilaxu:(s,c)=>`<path d="M22 12 C44 22 44 30 32 35 C20 40 20 48 42 60" fill="none" stroke="${s}" stroke-width="3.6" stroke-linecap="round"/><path d="M42 12 C20 22 20 30 32 35 C44 40 44 48 22 60" fill="none" stroke="${s}" stroke-width="3.6" stroke-linecap="round"/><g stroke="${s}" stroke-width="2.2"><line x1="26" y1="17" x2="38" y2="17"/><line x1="25.5" y1="27" x2="38.5" y2="27"/><line x1="25.5" y1="43" x2="38.5" y2="43"/><line x1="26" y1="53" x2="38" y2="53"/></g>`,
+  choam:(s,c)=>`<rect fill="${s}" x="30.5" y="15" width="3" height="38"/><rect fill="${s}" x="11" y="19" width="42" height="3.5" rx="1.5"/><rect fill="${s}" x="22" y="52" width="20" height="5" rx="1"/><circle fill="${s}" cx="32" cy="14" r="3.2"/><g stroke="${s}" stroke-width="1.6"><path d="M14 22 L8 38 M14 22 L20 38 M50 22 L44 38 M50 22 L56 38"/></g><path fill="${s}" d="M6 38 A8 6 0 0 0 22 38Z"/><path fill="${s}" d="M42 38 A8 6 0 0 0 58 38Z"/>`,
+  richese:(s,c)=>`<polygon fill="${s}" points="32,12 52,30 32,60 12,30"/><path d="M12 30 H52 M23 30 L32 12 L41 30 M23 30 L32 60 L41 30" fill="none" stroke="${c}" stroke-width="2"/>`,
+  ecaz:(s,c)=>`<rect fill="${s}" x="30" y="36" width="4.4" height="22"/><path d="M32 56 L24 61 M32 56 L40 61" stroke="${s}" stroke-width="3" stroke-linecap="round"/><circle fill="${s}" cx="32" cy="25" r="12"/><circle fill="${s}" cx="20" cy="33" r="8"/><circle fill="${s}" cx="44" cy="33" r="8"/><path d="M32 40 L32 26 M32 33 L25 28 M32 31 L39 26" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`,
+  moritani:(s,c)=>`<polygon fill="${s}" points="37,9 17,38 30,38 23,62 47,28 34,28 41,9"/>`
+};
+
+/* Every faction module has the same parts: profile (spice, free revival, hand limit), win condition,
+   own steps per phase, reactions, one counter + notes, alliance & Karama, and "others" —
+   the conditions it imposes on everyone else, which land in their checklists. */
+const F=[
+ {id:'atreides',name:'Atreides',c:'#2e7d4f',spice:10,rev:2,hand:4,tag:'Знання: бачиш карти, спайс і план суперника',
+  start:'10 сил в Arrakeen, 10 у резерві.',win:null,
+  items:[[2,'Подивитися верхню карту спайс-колоди; записати, де буде наступний спайс','M'],[4,'Подивитися кожну карту перед торгами; записати, що це і хто купив','M'],[7,'Prescience: змусити суперника показати 1 елемент плану (лідер / зброя / захист / число)','D'],[7,'Kwisatz Haderach (advanced): від 7 втрачених сил +2 до лідера, з яким він іде','D'],[8,'Орнітоптери й ставка 3, якщо тримаєш Arrakeen','R']],
+  inter:[['Карта виходить на торги','подивись її і запиши',4],['Відкривається спайс-карта','подивись наступну',2],['Битва з тобою','Prescience: що змусиш показати',7]],
+  counter:['Сили, втрачені в битвах (Kwisatz Haderach)',7],track:['Хто яку карту купив','Прогноз спайс-колоди'],
+  others:[[4,'Atreides бачить кожну карту на торгах','R'],[7,'Atreides може змусити тебе показати 1 елемент плану','R']],
+  ally:'Союзнику можна підказувати prescience у його битвах.',karama:'Побачити весь бойовий план одного гравця.',memo:true},
+ {id:'harkonnen',name:'Harkonnen',c:'#a3221f',spice:10,rev:2,hand:8,tag:'Зрада й карти: 4 зрадники, рука до 8',
+  start:'10 сил у Carthag, 10 у резерві. Тримаєш усі 4 Traitor-карти.',win:null,
+  items:[[0,'Записати всіх 4 зрадників і їхні фракції','M'],[4,'Купив карту → взяти ще одну безкоштовно з колоди','M'],[7,'Лідер суперника твій зрадник? → «Treachery!»','D'],[7,'Capture (advanced): виграв битву → взяти випадкового лідера суперника: залишити або вбити за 2 спайси','D'],[7,'Полонений лідер у тебе: можна використати в бою','R']],
+  inter:[['Суперник іде в бій з твоїм зрадником','Treachery!',7],['Ти виграв битву','Capture: взяти лідера',7],['Ти купив карту','бонусна карта з колоди',4]],
+  counter:['Розкрито зрадників',4],track:['4 зрадники: хто і чи розкритий','Полонені лідери','Рука (до 8 карт)'],
+  others:[[7,'Harkonnen тримає 4 зрадників: твій лідер може бути одним з них','R'],[4,'Harkonnen бере бонусну карту за кожну покупку','R']],
+  ally:'Союзник може користуватися твоїми зрадниками.',karama:'Забрати наосліп будь-скільки карт у гравця, віддавши йому стільки ж своїх.',memo:true},
+ {id:'emperor',name:'Emperor',c:'#6a3d9e',spice:10,rev:1,hand:4,tag:'Гроші: спайс з аукціонів іде тобі',
+  start:'20 сил у резерві (15 звичайних + 5 Сардаукарів), на полі нічого.',win:null,
+  items:[[4,'Забрати оплату за кожну карту, куплену іншими','M'],[4,'Твої власні покупки: спайс іде в банк','R'],[5,'Сардаукари (advanced): не більше 1 за хід','R'],[5,'Оплатити союзнику до 3 додаткових відроджень','O'],[6,'Дати союзнику спайс на висадку','O'],[7,'Сардаукар = 2 сили (проти Fremen: 1)','R',{ifOpp:'fremen',note:'Fremen за столом: проти них Сардаукар рахується як 1.'}]],
+  inter:[['Хтось купив карту','+спайс тобі',4],['Союзник відроджується','оплатити до 3 додаткових',5]],
+  counter:['Сардаукари в Tanks',5],track:['Дохід з аукціонів за хід','Сардаукари: резерв / поле'],
+  others:[[4,'Оплата за куплені карти йде Emperor, а не в банк','R'],[7,'Сардаукари Emperor б\'ються як 2 сили','R']],
+  ally:'Можеш давати союзнику спайс і оплачувати його відродження.',karama:'Безкоштовно відродити 3 сили або 1 лідера.',memo:true,
+  extra:'З Homeworlds: Kaitain (звичайні сили) і Salusa Secundus (лише Сардаукари).'},
+ {id:'fremen',name:'Fremen',c:'#c9952b',spice:3,rev:3,hand:4,tag:'Пустеля: безкоштовні сили й черв\'яки',
+  start:'10 сил на вибір у Sietch Tabr, False Wall South і False Wall West; 10 у резерві.',
+  win:'Кінець гри без переможця: тримаєш Sietch Tabr і Habbanya, а в Tuek\'s Sietch немає Harkonnen, Atreides, Emperor, Richese.',
+  items:[[1,'Шторм забирає лише половину твоїх сил у секторі','R'],[2,'Shai-Hulud: черв\'як тебе не їсть; можна осідлати й перемістити сили','D'],[2,'Discovery: можеш дивитися токени Hiereg','O'],[6,'«Висадка» з резерву безкоштовно: у Great Flat або до 2 територій від нього','O'],[6,'Рух на 2 території','R'],[7,'Advanced: твої сили б\'ються на повну без спайсу','R'],[7,'Fedaykin (advanced) = 2 сили; відроджуєш не більше 1 за хід','R'],[9,'Перевір спецумову Fremen (вкладка «Умови»)','R']],
+  inter:[['З\'явився черв\'як','де, чи їдеш, куди',2],['Шторм накриває твої сили','втрачаєш лише половину',1]],
+  counter:['Fedaykin у Tanks',3],track:['Fedaykin: резерв / поле','Прогрес до спецперемоги'],
+  others:[[2,'Черв\'як не їсть Fremen і може перевезти їхні сили','R'],[9,'Fremen мають спецперемогу на кінець гри','R']],
+  ally:'Союзну здібність звір із листом фракції.',karama:'Покласти черв\'яка в будь-яку піщану територію.',memo:true},
+ {id:'guild',name:'Spacing Guild',c:'#d4621c',spice:5,rev:1,hand:4,tag:'Транспорт: заробляєш на кожній висадці',
+  start:'5 сил у Tuek\'s Sietch, 15 у резерві.',win:'Кінець гри без переможця → перемагає Guild.',
+  items:[[2,'Discovery: можеш дивитися токени Smuggler','O'],[6,'Обрати момент свого ходу: до або після будь-кого','D'],[6,'Забрати оплату за кожну чужу висадку','M'],[6,'Твоя висадка за пів ціни; можна з території на територію або назад у резерв','O'],[9,'Кінець гри без переможця → перемагає Guild','R']],
+  inter:[['Хтось висаджується','скільки спайсу тобі',6],['Фаза висадки почалась','обрати момент ходу',6]],
+  counter:['Спайс з висадок цього ходу',null],track:['Хто вже ходив у фазі висадки'],
+  others:[[6,'Оплата за висадку йде Guild, а не в банк','R'],[6,'Guild може зробити свій хід у будь-який момент цієї фази','R']],
+  ally:'Союзник висаджується за пів ціни.',karama:'Зупинити одну висадку з-поза планети будь-якого гравця.',memo:true,
+  extra:'З Homeworlds можеш перевозити сили між планетами (cross-shipment).'},
+ {id:'bg',name:'Bene Gesserit',c:'#2f4f9e',spice:5,rev:1,hand:4,tag:'Вплив: передбачення, Голос, радники',
+  start:'1 сила в Polar Sink, 19 у резерві.',win:'Переміг саме передбачений гравець на передбаченому ході → перемагаєш ти.',
+  items:[[0,'Записати передбачення: яка фракція і на якому ході переможе','M'],[6,'Хтось висадився → безкоштовно відправити 1 радника (advanced: у ту ж територію або в Polar Sink)','O'],[6,'Advanced: перевернути радників ↔ бійців, коли хтось заходить у твою територію','D'],[7,'Голос: наказати супернику зіграти / не зіграти певну карту','D'],[7,'Радники не б\'ються і не блокують стронгхолд','R'],[9,'Перевірити передбачення','R']],
+  inter:[['Хтось висаджується','відправити радника?',6],['Хтось заходить до моїх радників','перевернути?',6],['Битва з тобою або союзником','Голос',7]],
+  counter:['Радники на полі',null],track:['Передбачення (фракція і хід)','Радники vs бійці по територіях'],
+  others:[[7,'BG може наказати Голосом зіграти / не зіграти карту','R'],[6,'Після твоєї висадки BG може відправити радника','R']],
+  ally:'Можеш використовувати Голос у битвах союзника.',karama:'Спецздібності немає, але будь-яку Worthless-карту можна зіграти як Karama.',memo:true,
+  extra:'Advanced-правила радників найзаплутаніші в грі: звір із листом фракції.'},
+ {id:'ixians',name:'Ixians',c:'#17818c',spice:10,rev:1,hand:4,tag:'Технології: колода Treachery і рухомий стронгхолд',
+  start:'6 сил (3 Cyborg + 3 Suboid) у Hidden Mobile Stronghold, решта в резерві. Відродження: Cyborg або Suboid.',win:null,
+  items:[[0,'Взяти по карті на кожну фракцію, залишити 1, решту роздати іншим','M'],[0,'Після першого шторму поставити стронгхолд (не-стронгхолдна територія)','M'],[1,'До шторму: перемістити стронгхолд до 3 територій, якщо там твої сили','O'],[4,'Перед торгами: взяти на 1 карту більше, подивитися, одну покласти на верх / низ колоди','M'],[4,'Technology (advanced, раз на фазу): замінити карту на торгах своєю','O'],[5,'Cyborg коштує 3 спайси','R'],[6,'Cyborg рухається на 2; Suboid на 2 лише з Cyborg','R'],[7,'Cyborg = 2 сили; Suboid = ½ і не підсилюється спайсом','R'],[7,'Після бою: обміняти вцілілих Suboid на втрачених Cyborg','O']],
+  inter:[['Карта виходить на торги','Technology: замінити?',4],['Шторм рушає','перемістити стронгхолд?',1]],
+  counter:['Cyborg у Tanks',null],track:['Верх / низ Treachery-колоди','Положення стронгхолду'],
+  others:[[4,'Ixians бачать карти перед торгами й можуть замінити одну','R'],[1,'Стронгхолд Ixians може переміститися перед штормом','R']],
+  ally:'Союзник після покупки може скинути карту й узяти верхню з колоди.',karama:'Перемістити стронгхолд на 2 території на додачу до звичайного руху.'},
+ {id:'tleilaxu',name:'Tleilaxu',c:'#5b6e66',spice:5,rev:2,hand:4,tag:'Відродження й Face Dancer',
+  start:'20 сил у резерві. Traitor-карт немає, замість них 3 Face Dancer.',win:null,
+  items:[[0,'Після роздачі зрадників витягнути 3 Face Dancer','M'],[5,'Ти: без ліміту, за пів ціни (округлення вгору)','O'],[5,'Інші платять за відродження тобі; +1 спайс із банку за кожну фракцію з безкоштовним відродженням','M'],[5,'Підняти комусь ліміт відродження до 5','D'],[5,'Продати лідера тому, хто просить свого з Tanks','D'],[5,'Ghola (advanced): маєш менше 5 лідерів → відродити чужого лідера собі','O'],[7,'Переможець битви з лідером-Face Dancer → розкрити: його сили йдуть у резерв, заміняєш своїми','D'],[7,'Zoal = сила лідера суперника','R'],[9,'Замінити один нерозкритий Face Dancer','O'],[9,'Розкрито всі 3 → перемішати й витягнути 3 нових','M']],
+  inter:[['Хтось виграв битву','перевірка Face Dancer',7],['Хтось відроджується','оплата тобі',5]],
+  counter:['Розкрито Face Dancer',3],track:['3 Face Dancer: хто вони','Чужі лідери-ghola'],
+  others:[[5,'Оплата за відродження йде Tleilaxu, а не в банк','R'],[7,'Виграв битву: твій лідер може виявитись Face Dancer Tleilaxu','R']],
+  ally:'Союзник відроджує сили й лідерів за пів ціни.',karama:'Заборонити гравцю відродження цього ходу.'},
+ {id:'choam',name:'CHOAM',c:'#7d5230',spice:2,rev:0,hand:5,tag:'Економіка: благодійність і продаж карт',
+  start:'20 сил у резерві.',win:null,
+  items:[[3,'Отримати 2 спайси за кожну фракцію в грі, раніше за інших','M'],[3,'Хтось бере благодійність → платиш ти','M'],['any','Продати дублікати по 3 спайси, Worthless по 2','O'],['any','Або зіграти Worthless як спецефект (Baliset, Jubba Cloak, Kull Wahad, Kulon, La La La, Trip to Gamont)','D'],[5,'Без ліміту, 1 спайс за силу','O'],[7,'Auditor (advanced): вижив → подивитися 2 випадкові карти суперника (загинув: 1), якщо той не відкупиться','D'],[7,'Інші платять спайс за сили → половина (вниз) тобі','M'],[9,'Inflation: «подвоїти» / «скасувати» благодійність на наступний хід','D']],
+  inter:[['Хтось платить спайс у битві','твоя половина',7],['Хтось бере благодійність','платиш ти',3],['Worthless-ефект','у будь-який момент',null]],
+  counter:['Дохід цього ходу',null],track:['Inflation: стан токена','Worthless-карти в руці'],
+  others:[[3,'Благодійність платить CHOAM, а не банк','R'],[7,'Половина спайсу за сили в битві йде CHOAM','R']],
+  ally:'Раз за хід обмінятися картою із союзником; можеш оплатити його сили в битві.',karama:'Скинути будь-які карти з руки по 3 спайси.'},
+ {id:'richese',name:'Richese',c:'#a8327a',spice:5,rev:2,hand:4,tag:'Торгівля й обман: кеш карт і No-Field',
+  start:'20 сил у резерві. Кеш із 10 карт Richese (не в руці) і 3 No-Field токени (0, 3, 5).',win:null,
+  items:[[4,'Black market (advanced, до оголошення карт): виставити карту з руки; можна брехати, що це','D'],[4,'Виставити 1 карту з кешу: першою чи останньою, «по колу» або «тихий» аукціон','D'],[4,'На торги йде на 1 карту менше','R'],[4,'Отримати оплату за продані свої карти','M'],[6,'Висадка через No-Field: платиш за 1 силу, кладеш закритий токен','D'],[6,'Не можна той самий токен двічі поспіль; на планеті лише один','R'],[7,'Перед битвою відкрити No-Field у цій території й поставити сили з резерву','M'],['any','Будь-коли до битви: відкрити No-Field добровільно','O']],
+  inter:[['Шторм або черв\'як у території з No-Field','токен відкривається, втрачаєш сили',null],['Починаються торги','black market і карта з кешу',4]],
+  counter:['Продано карт з кешу',10],track:['No-Field: де і який','Чорний ринок: що казав і що насправді'],
+  others:[[4,'Одна карта на торгах з кешу Richese; оплата йде Richese','R'],[7,'No-Field Richese у території битви відкривається перед боєм','R']],
+  ally:'Можеш висадити сили союзника через No-Field; дати йому карту Richese.',karama:'У будь-який момент купити карту зі свого кешу за 3 спайси.'},
+ {id:'ecaz',name:'Ecaz',c:'#6f9128',spice:12,rev:2,hand:4,tag:'Союзи: посли в стронгхолдах',
+  start:'6 сил в Imperial Basin, 14 у резерві. Посли: токен Ecaz + 5 випадкових.',win:'Союз зі спільною окупацією 3 стронгхолдів.',
+  items:[[0,'Loyalty (advanced): відкрито відкласти випадкову Traitor-карту на свого лідера','M'],[5,'Кінець фази: поставити послів у стронгхолди без шторму й без посла (1-й: 1 спайс, кожен наступний +1)','D'],[5,'Duke Vidal: відродити за 5 спайсу в будь-який момент','O'],[6,'У союзі: ти й союзник можете стояти в одній території','R'],[7,'Спільна битва: обрати, хто з вас воює; половина твоїх сил (вгору) додається без спайсу','D'],[8,'Collection (advanced): спільно в Arrakeen / Carthag / Tuek\'s обидва отримують повну суму','R'],[9,'Усі 5 випадкових послів спрацювали → повернути й витягнути 5 нових','M']],
+  inter:[['Посол Ecaz','Vidal або союз',null],['Посол Atreides','побачити руку',null],['Посол BG','ефект будь-якого іншого посла',null],['Посол CHOAM','скинути карти по 3 спайси',null],['Посол Emperor','+5 спайсу',null],['Посол Fremen','перекинути групу сил',null],['Посол Harkonnen','подивитися їхнього зрадника',null],['Посол Ixian','замінити карту',null],['Посол Richese','купити карту за 3',null],['Посол Guild','до 4 сил безкоштовно',null],['Посол Tleilaxu','відродити лідера або до 4 сил',null]],
+  interNote:'Хтось заходить у стронгхолд з послом (не союзник, не радники, не фракція посла) → застосувати ефект.',
+  counter:['Випадкові посли, що спрацювали',5],track:['Посли: де стоять','Спільні стронгхолди з союзником'],
+  others:[[6,'Вхід у стронгхолд з послом Ecaz запускає ефект посла','R'],[9,'Ecaz у союзі перемагає спільною окупацією 3 стронгхолдів','R']],
+  ally:'Ефект посла можна віддати союзнику.',karama:'Якщо не грав ні зброї, ні захисту, додати різницю сил лідерів до свого числа.'},
+ {id:'moritani',name:'Moritani',c:'#454a54',spice:12,rev:2,hand:4,tag:'Терор: приховані токени в стронгхолдах',
+  start:'6 сил у будь-яку незайняту територію після всіх, 14 у резерві. 6 Terror-токенів (приховано).',win:null,
+  items:[[6,'Кінець фази: дві битви в стронгхолдах (без Ecaz) → забрати Duke Vidal','M'],[7,'Assassinate Leaders (advanced): програв, лідер суперника вижив, Traitor не викликали → показати Traitor цієї фракції й вбити іншого лідера (раз на фракцію)','D'],[9,'Забрати 5 спайсу Extortion; викуп за 3, інакше токен повертається','M'],[9,'Відкласти показану Traitor-карту й добрати нову','M'],[9,'Terrorize: покласти АБО перенести 1 токен','D'],[9,'Відкласти Duke Vidal','M']],
+  inter:[['Пропустити','токен лишається прихованим',null],['Enemy of My Enemy','запропонувати союз',null,{ifOpp:'ecaz',note:'Ecaz за столом: проти Ecaz це не діє.'}],['Assassination','',null],['Atomics','',null],['Extortion','',null],['Robbery','',null],['Sabotage','',null],['Sneak Attack','',null]],
+  interNote:'Хтось заходить у стронгхолд з токеном → обрати:',
+  counter:['Terror-токени на полі',6],track:['Токени: де і що думають суперники','Assassinate Leaders: проти кого використано'],
+  others:[[6,'Вхід у стронгхолд з Terror-токеном Moritani може запустити терор','R'],[9,'Extortion Moritani: заплати 3 спайси, щоб прибрати токен','D']],
+  ally:'Союзник після програшу залишає 1 зіграну карту.',karama:'Після програшу змусити суперника скинути або залишити його зіграні карти.',
+  extra:'Atomics Aftermath знижує ліміт руки до 3.'}
+];
+const BYID=Object.fromEntries(F.map(f=>[f.id,f]));
+const COMMON_WIN='Наприкінці ходу тримаєш 3 стронгхолди сам або 4 разом із союзником. Гра триває 10 ходів.';
+
+const COMMON=[
+ [0,'Взяти 4 Traitor-карти, залишити 1','M',{skip:['harkonnen','tleilaxu']}],
+ [0,'Записати стартову Treachery-карту','M'],
+ [1,'Внести втрати від шторму (сили в піску, спайс)','M'],
+ [2,'Advanced: відкриваються 2 спайс-карти (стопки A і B)','R'],
+ [2,'Nexus (після Shai-Hulud з 2-го ходу): створити / розірвати союз','D'],
+ [3,'Добрати до 2 спайсу, якщо в тебе 0–1','O',{skip:['choam']}],
+ [4,'Оголосити кількість карт; ліміт руки: див. «Умови»','R'],
+ [4,'Записати кожен лот: хто купив, ціна','O'],
+ [5,'До 3 сил за хід: безкоштовні + по 2 спайси за кожну додаткову','O'],
+ [5,'Лідер: коли всі 5 у Tanks, ціна = сила лідера','O'],
+ [6,'1 висадка: 1 спайс/сила в стронгхолд, 2 деінде; не в шторм, не в стронгхолд з двома іншими','O'],
+ [6,'1 рух: 1 територія, 3 з орнітоптерами (сили в Arrakeen/Carthag на старті руху)','O'],
+ [7,'План: сили на колесі, лідер або Cheap Hero, зброя / захист','M'],
+ [7,'Advanced: 1 спайс на кожну силу для повної сили, інакше ½','D',{skip:['fremen']}],
+ [7,'Викликати Traitor, якщо лідер суперника твій зрадник','D',{skip:['tleilaxu','harkonnen']}],
+ [7,'Karama: заблокувати чужу здібність або використати свою','D'],
+ [8,'2 спайси на силу (3, якщо тримаєш Arrakeen/Carthag)','O'],
+ [8,'Advanced: +2 за Arrakeen, +2 за Carthag, +1 за Tuek\'s Sietch','O'],
+ [9,'Забрати спайс перед ширмою (хабарі)','M'],
+ [9,'Перевірка перемоги: 3 стронгхолди сам / 4 союзом','R']
+];
+
+const ICON={
+  phase:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11"/><circle cx="5.2" cy="18" r="1.3"/></svg>',
+  inter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
+  track:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  rules:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>',
+  log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+  back:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>'
+};
+const NAV=[['phase','Фаза'],['track','Трекери'],['rules','Умови'],['log','Лог']];
+
+function ink(hex){const n=parseInt(hex.slice(1),16),ch=[n>>16,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});const L=.2126*ch[0]+.7152*ch[1]+.0722*ch[2];return L>.3?'#1d1b17':'#f7f2e8'}
+function emblem(id,size=44){const f=BYID[id],s=ink(f.c);return `<svg class="emb" viewBox="0 0 64 72" width="${size}" height="${Math.round(size*72/64)}" role="img" aria-label="Герб ${f.name}"><path d="M3 3 H61 V33 C61 52 47 64 32 70 C17 64 3 52 3 33 Z" fill="${f.c}" stroke="${s}" stroke-opacity=".35" stroke-width="1.5"/><path d="M7 7 H57 V33 C57 49 45 59 32 65 C19 59 7 49 7 33 Z" fill="none" stroke="${s}" stroke-opacity=".3" stroke-width="1"/>${SYM[id](s,f.c)}</svg>`}
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+const KEY='dune-helper-v2';
+const fresh=()=>({fac:null,opps:[],started:false,turn:1,phase:0,spice:0,checks:{},notes:{},count:0,log:[],tab:'phase',closed:{},menu:false,confirm:false});
+let S=fresh();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')return Object.assign(fresh(),v)}catch(e){}return null}
+
+function setFac(id){
+  const f=id?BYID[id]:null;document.documentElement.style.setProperty('--fac',f?f.c:'#71807b');
+  setTimeout(()=>{document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.body).backgroundColor||'#eef1f0'},350)}
+function addLog(text){S.log.unshift({t:S.turn,p:S.phase,text});if(S.log.length>400)S.log.length=400}
+let toastT;function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1600)}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}}
+
+// Keep the phone screen on while a game is running.
+let lock=null;
+async function keepAwake(){if(!S.started||document.visibilityState!=='visible'||lock)return;try{lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}catch(e){lock=null}}
+document.addEventListener('visibilitychange',keepAwake);
+
+const condOk=o=>!(o&&o.skip&&o.skip.includes(S.fac));
+const condNote=o=>o&&o.ifOpp&&S.opps.includes(o.ifOpp)?`<span class="cond">${esc(o.note)}</span>`:'';
+function groups(p){
+  const f=BYID[S.fac],own=[],com=[],oth=[],any=[];
+  f.items.forEach((it,i)=>{const x={id:'f'+i,text:it[1],type:it[2],opt:it[3]};if(it[0]===p)own.push(x);else if(it[0]==='any')any.push(x)});
+  COMMON.forEach((it,i)=>{if(it[0]===p&&condOk(it[3]))com.push({id:'c'+i,text:it[1],type:it[2]})});
+  S.opps.forEach(o=>BYID[o].others.forEach((it,i)=>{if(it[0]===p)oth.push({id:`o${o}${i}`,text:it[1],type:it[2],from:o})}));
+  return {own,com,oth,any}}
+const allOf=g=>[...g.own,...g.com,...g.oth,...g.any];
+const ck=(p,id)=>`${S.turn}:${p}:${id}`;
+const phasesThisTurn=()=>PHASES.filter(p=>p.n!==0||S.turn===1);
+function phaseDone(p){const m=allOf(groups(p)).filter(x=>x.type==='M');return m.length>0&&m.every(x=>S.checks[ck(p,x.id)])}
+
+/* ---------------- Render ---------------- */
+const app=document.getElementById('app');
+function render(){setFac(S.fac);app.innerHTML=S.started?renderGame():renderPicker();save()}
+
+function renderPicker(){
+  const me=S.fac;
+  return `<div class="wrap">
+  <div class="title" style="padding-top:28px"><span class="label">Dune · advanced</span><h1 style="margin-top:6px">За кого граєш?</h1><p class="muted">Кожна фракція отримує однаковий набір: свої кроки по фазах, реакції, трекер, умови перемоги, союз і Karama. Умови, які суперники накладають на тебе, теж потрапляють у твій чеклист.</p></div>
+  <div class="card rowlist">${F.map(f=>`<button class="r" data-pick="${f.id}" aria-pressed="${me===f.id}">${emblem(f.id,34)}<span class="t"><b>${f.name}</b><span>${esc(f.tag)}</span></span><span class="dot"></span></button>`).join('')}</div>
+  ${me?`<div class="title" id="opps" style="padding-top:26px"><h2 style="font-size:22px">Хто ще за столом?</h2><p class="muted small">Їхні умови з'являться у твоїх фазах з позначкою фракції.</p></div>
+  <div class="chips">${F.filter(f=>f.id!==me).map(f=>`<button class="pill" data-opp="${f.id}" aria-pressed="${S.opps.includes(f.id)}">${emblem(f.id,18)}${f.name}</button>`).join('')}</div>`:''}
+  </div>
+  <div class="dock act solo"><div class="in">${me
+    ?`<button class="btn" data-act="start" ${S.opps.length?'':'disabled'}><span>${S.opps.length?`Почати за ${esc(BYID[me].name)} · ${S.opps.length+1} гравці`:'Обери суперників'}</span></button>`
+    :`<button class="btn" disabled><span>Обери свою фракцію</span></button>`}</div></div>`}
+
+function sec(key,title,count,body,lead=''){
+  const closed=!!S.closed[key];
+  return `<section class="sec ${closed?'closed':''}"><header role="button" tabindex="0" data-fold="${key}" aria-expanded="${!closed}">${lead}<h3>${title}</h3>${count!=null?`<span class="cnt">${count}</span>`:''}${ICON.chev}</header><div class="body">${body}</div></section>`}
+
+function renderGame(){
+  const f=BYID[S.fac],over=S.turn>10;
+  const top=`<div class="top"><div class="in"><span class="round" aria-hidden="true">${emblem(f.id,28)}</span><div class="who"><b>${f.name}</b><span>${over?'Гру завершено':`Хід ${S.turn} з 10 · ${S.opps.length} суперн.`}</span></div><button class="round" data-act="menu" aria-label="Меню гри" aria-expanded="${S.menu}">⋯</button></div></div>`;
+  const menu=S.menu?`<div class="card panel"><span class="label">Гра</span>
+     ${S.confirm?`<p>Почати нову гру? Чеклисти, трекер і лог цієї гри буде стерто.</p><div class="row"><button class="btn" data-act="reset"><span>Так, нова гра</span></button><button class="btn soft" data-act="noreset"><span>Скасувати</span></button></div>`
+     :`<div class="row"><button class="btn soft" data-act="ask-reset"><span>Нова гра або інша фракція</span></button></div><p class="muted small">Прогрес зберігається в цьому браузері. Екран не гасне, поки гра відкрита. Кожен гравець відкриває додаток на своєму телефоні.</p>`}</div>`:'';
+  const nav=`<nav class="dock navdock" aria-label="Розділи"><div class="in"><div class="nav" role="tablist">${NAV.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}">${ICON[k]}${l}${k==='log'&&S.log.length?`<span class="badge">${S.log.length>99?'99+':S.log.length}</span>`:''}</button>`).join('')}</div><button class="quick" role="tab" data-tab="inter" aria-selected="${S.tab==='inter'}" aria-label="Реакції на чужі дії">${ICON.inter}</button></div></nav>`;
+  let body='',act='';
+  if(S.tab==='phase'){
+    if(over){
+      body=`<div class="title"><h1>Хід 10 завершено</h1><p class="muted">Ніхто не виконав умову перемоги? Перевір спецумови у вкладці «Умови».</p></div><button class="btn soft" data-act="back10"><span>Повернутись до ходу 10</span></button>`;
+    }else{
+      const g=groups(S.phase),all=allOf(g),must=all.filter(x=>x.type==='M'),mustDone=must.filter(x=>S.checks[ck(S.phase,x.id)]).length;
+      const list=phasesThisTurn(),idx=list.findIndex(p=>p.n===S.phase),next=list[idx+1],prev=list[idx-1];
+      const cnt=a=>`${a.filter(x=>S.checks[ck(S.phase,x.id)]).length}/${a.length}`;
+      const li=x=>{const on=!!S.checks[ck(S.phase,x.id)],id=`i-${S.turn}-${S.phase}-${x.id}`;return `<div class="item ${on?'checked':''}"><label for="${id}"><input type="checkbox" id="${id}" data-check="${x.id}" ${on?'checked':''}><span class="txt"><p>${esc(x.text)}</p><span class="meta"><span class="tag t-${x.type}">${TYPES[x.type]}</span>${x.from?`<span class="from">${emblem(x.from,14)}${BYID[x.from].name}</span>`:''}</span>${condNote(x.opt)}</span></label></div>`};
+      body=`<div class="title"><span class="label">Хід ${S.turn} з 10</span><h1 style="margin-top:4px">${esc(pname(S.phase))}</h1></div>
+      <nav class="pills" aria-label="Фази ходу">${list.map(p=>`<button class="pill ${phaseDone(p.n)&&p.n!==S.phase?'done':''}" data-phase="${p.n}" ${p.n===S.phase?'aria-current="step"':''}>${p.n?`<span class="n">${p.n}</span>`:''}${p.short}</button>`).join('')}</nav>
+      <div class="stack" id="phasecard">
+        <div class="card spice"><span class="label">Спайс</span><div class="row"><div class="amount">${S.spice}<small>спайсу</small></div><div class="acts">${[-2,-1,1,2].map(v=>`<button data-spice="${v}" aria-label="${v>0?'Плюс':'Мінус'} ${Math.abs(v)}">${v>0?'+':'−'}${Math.abs(v)}</button>`).join('')}</div></div></div>
+        ${g.own.length?sec('own',f.name,cnt(g.own),g.own.map(li).join(''),emblem(f.id,20)):''}
+        ${g.oth.length?sec('oth','Умови від суперників',cnt(g.oth),g.oth.map(li).join('')):''}
+        ${g.com.length?sec('com','Для всіх фракцій',cnt(g.com),g.com.map(li).join('')):''}
+        ${g.any.length?sec('any','Будь-коли',cnt(g.any),g.any.map(li).join('')):''}
+        ${!all.length?`<div class="card empty">У цій фазі для тебе нічого особливого.</div>`:''}
+      </div>
+      ${mustDone<must.length?`<div class="warn">Лишилось обов'язкових: ${must.length-mustDone}</div>`:''}
+      <p class="hintline">Свайп по картках: наступна або попередня фаза</p>`;
+      act=`<div class="dock act"><div class="in"><button class="round" data-go="prev" aria-label="Попередня фаза" ${prev||S.turn>1?'':'disabled'}>${ICON.back}</button>
+        <button class="btn" data-go="next"><span>${next?`Далі: ${esc(next.short)}`:S.turn<10?`Завершити хід ${S.turn}`:'Завершити гру'}</span></button></div></div>`;
+    }
+  }else body=renderTab(f);
+  return top+`<div class="wrap">${menu}${body}</div>`+act+nav;
+}
+
+function renderTab(f){
+  if(S.tab==='inter'){
+    return `<div class="title"><h1>Реакції</h1><p class="muted">${esc(f.interNote||'Чужа дія, на яку ти відповідаєш. Натисни, коли вона сталась: запис піде в лог.')}</p></div>
+    <div class="card">${f.inter.map((x,i)=>`<button class="react" data-inter="${i}"><b>${esc(x[0])}</b>${x[1]||x[2]!=null?`<span>${esc(x[1])}${x[2]!=null?`${x[1]?' · ':''}фаза ${x[2]}`:''}</span>`:''}${x[3]?condNote(x[3]):''}</button>`).join('')}</div>`}
+  if(S.tab==='track'){
+    const [lab,max]=f.counter,v=S.count||0;
+    return `<div class="title"><h1>Трекери</h1></div><div class="stack">
+    <section class="sec"><header><h3>${esc(lab)}</h3></header><div class="counter"><button data-count="-1" aria-label="Мінус">−</button><span class="v">${v}${max?`<small> / ${max}</small>`:''}</span><button data-count="1" aria-label="Плюс">+</button>${max?`<div class="pips" aria-hidden="true">${Array.from({length:max},(_,k)=>`<i class="${k<v?'on':''}"></i>`).join('')}</div>`:''}</div></section>
+    ${f.track.map((t,i)=>`<section class="sec"><header><h3><label for="tr-${f.id}-${i}">${esc(t)}</label></h3></header><textarea id="tr-${f.id}-${i}" data-note="${i}" placeholder="Нотатки…">${esc(S.notes[i]||'')}</textarea></section>`).join('')}</div>`}
+  if(S.tab==='rules'){
+    const specials=S.opps.filter(o=>BYID[o].win);
+    return `<div class="title"><h1>Умови</h1><p class="muted">Твій профіль і що діє за цим столом.</p></div><div class="stack">
+    ${sec('r-prof','Профіль',null,`<dl class="kv"><dt>Спайс на старті</dt><dd>${f.spice}</dd><dt>Безкоштовне відродження</dt><dd>${f.rev||'немає'}</dd><dt>Ліміт руки</dt><dd>${f.hand}</dd><dt>Старт</dt><dd>${esc(f.start)}</dd></dl>`,emblem(f.id,20))}
+    ${sec('r-win','Перемога',null,`<ul class="bullets"><li><span><b>Для всіх:</b> ${esc(COMMON_WIN)}</span></li>${f.win?`<li><span><b>Твоя спецумова:</b> ${esc(f.win)}</span></li>`:''}${specials.map(o=>`<li><span><b>${BYID[o].name}:</b> ${esc(BYID[o].win)}</span></li>`).join('')}</ul>`)}
+    ${sec('r-ally','Союз і Karama',null,`<ul class="bullets"><li><span><b>Союзнику:</b> ${esc(f.ally)}</span></li><li><span><b>Karama:</b> ${esc(f.karama)}</span></li></ul>`)}
+    ${sec('r-opp','Суперники',null,`<ul class="bullets">${S.opps.map(o=>`<li><span><b>${BYID[o].name}:</b> ${esc(BYID[o].others.map(x=>x[1]).join('; '))}</span></li>`).join('')}</ul>`)}
+    ${f.extra?`<div class="note">${esc(f.extra)}</div>`:''}
+    ${f.memo?`<div class="note">Базові фракції описані з пам'яті; деталі (особливо advanced) звір із листом фракції.</div>`:''}</div>`}
+  return `<div class="title"><h1>Лог</h1></div>${S.log.length?`<div class="card"><ul class="bullets log" style="padding-top:16px">${S.log.map(e=>`<li><span><time>Хід ${e.t} · ${PHASES[e.p]?.short||''}</time>${esc(e.text)}</span></li>`).join('')}</ul></div>`:`<div class="card empty">Поки порожньо. Сюди потрапляють виконані пункти, реакції й завершені ходи.</div>`}`}
+
+/* ---------------- Events ---------------- */
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button,[data-fold]');if(!b)return;
+  const d=b.dataset;
+  if(d.fold){S.closed[d.fold]=!S.closed[d.fold];render();return}
+  if(d.pick){S.fac=d.pick;S.opps=S.opps.filter(x=>x!==d.pick);render();document.getElementById('opps')?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(d.opp){S.opps=S.opps.includes(d.opp)?S.opps.filter(x=>x!==d.opp):[...S.opps,d.opp];render();return}
+  if(d.spice){S.spice=Math.max(0,S.spice+ +d.spice);buzz();render();return}
+  if(d.phase!=null){S.phase=+d.phase;render();return}
+  if(d.tab){S.tab=d.tab;S.menu=false;render();scrollTo(0,0);return}
+  if(d.inter!=null){const x=BYID[S.fac].inter[+d.inter];addLog(`⚡ ${x[0]}${x[1]?': '+x[1]:''}`);buzz();toast('Записано в лог');render();return}
+  if(d.count){const max=BYID[S.fac].counter[1];S.count=Math.max(0,(S.count||0)+ +d.count);if(max)S.count=Math.min(max,S.count);buzz();render();return}
+  if(d.go){go(d.go);return}
+  switch(d.act){
+    case 'start':Object.assign(S,{started:true,turn:1,phase:0,spice:BYID[S.fac].spice,checks:{},notes:{},count:0,log:[],tab:'phase',closed:{},menu:false,confirm:false});addLog(`Гра почалась: ${BYID[S.fac].name} проти ${S.opps.map(x=>BYID[x].name).join(', ')}`);render();scrollTo(0,0);keepAwake();break;
+    case 'menu':S.menu=!S.menu;S.confirm=false;render();break;
+    case 'ask-reset':S.confirm=true;render();break;
+    case 'noreset':S.confirm=false;render();break;
+    case 'reset':{const f=S.fac,o=S.opps;S=fresh();S.fac=f;S.opps=o;try{lock&&lock.release()}catch(e){}render();scrollTo(0,0);break}
+    case 'back10':S.turn=10;S.phase=9;render();break;
+  }
+});
+app.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset?.fold){e.preventDefault();e.target.click()}});
+app.addEventListener('change',e=>{
+  const t=e.target;if(!t.dataset.check)return;
+  S.checks[ck(S.phase,t.dataset.check)]=t.checked;
+  if(t.checked){const it=allOf(groups(S.phase)).find(x=>x.id===t.dataset.check);if(it)addLog('✓ '+it.text);buzz()}
+  const y=scrollY;render();scrollTo(0,y);
+});
+app.addEventListener('input',e=>{const t=e.target;if(t.dataset.note!=null){S.notes[t.dataset.note]=t.value;save()}});
+
+// Swipe the phase cards to change phase.
+let sx=0,sy=0,st=0;
+app.addEventListener('touchstart',e=>{if(!e.target.closest('#phasecard')||e.target.closest('.acts'))return;const p=e.touches[0];sx=p.clientX;sy=p.clientY;st=1},{passive:true});
+app.addEventListener('touchend',e=>{if(!st)return;st=0;const p=e.changedTouches[0],dx=p.clientX-sx,dy=p.clientY-sy;if(Math.abs(dx)>70&&Math.abs(dy)<45)go(dx<0?'next':'prev')},{passive:true});
+
+function go(dir){
+  const list=phasesThisTurn(),idx=list.findIndex(p=>p.n===S.phase);
+  if(dir==='next'){
+    if(list[idx+1])S.phase=list[idx+1].n;
+    else{addLog(`Хід ${S.turn} завершено`);S.turn+=1;S.phase=1;if(S.turn<=10)toast(`Хід ${S.turn}`)}
+  }else{
+    if(list[idx-1])S.phase=list[idx-1].n;else if(S.turn>1){S.turn-=1;S.phase=9}else return;
+  }
+  buzz();render();scrollTo(0,0);
+  document.querySelector('.pills [aria-current]')?.scrollIntoView({inline:'center',block:'nearest'});
+}
+
+function start(data){const saved=(data&&data.S)?Object.assign(fresh(),data.S):load();if(saved)S=saved;if(!['phase','inter','track','rules','log'].includes(S.tab))S.tab='phase';render();keepAwake()}
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+
+</body></html>
