@@ -17,6 +17,7 @@
   --on-deep:#ffffff;
   --fac-text:color-mix(in oklab,var(--fac) 68%,#000);
   --navsel:color-mix(in oklab,var(--fac) 10%,#e7eae9);
+  --glow:#7c3aed;--glow-on:#fff;
   --shadow:0 1px 2px rgba(20,32,29,.05),0 6px 20px rgba(20,32,29,.05);
   --float:0 8px 28px rgba(20,32,29,.14),0 1px 3px rgba(20,32,29,.08);
   --must:#9b2f26; --must-bg:#f6e1de; --opt:#25643a; --opt-bg:#dcefe2; --dec:#34479a; --dec-bg:#e1e6f7; --rem:#585f5c; --rem-bg:#e8ebea;
@@ -31,6 +32,7 @@
   --deep:color-mix(in oklab,var(--fac) 58%,#fff); --on-deep:#111514;
   --fac-text:color-mix(in oklab,var(--fac) 52%,#fff);
   --navsel:color-mix(in oklab,var(--fac) 18%,#262c2a);
+  --glow:#b794ff;--glow-on:#17102b;
   --shadow:0 1px 2px rgba(0,0,0,.3); --float:0 8px 28px rgba(0,0,0,.5);
   --must:#f19a90; --must-bg:#3b2320; --opt:#93d3a6; --opt-bg:#1e3326; --dec:#aebcf2; --dec-bg:#222a45; --rem:#b6beba; --rem-bg:#262c2a;
   color-scheme:dark}}
@@ -42,6 +44,7 @@
   --deep:color-mix(in oklab,var(--fac) 58%,#fff); --on-deep:#111514;
   --fac-text:color-mix(in oklab,var(--fac) 52%,#fff);
   --navsel:color-mix(in oklab,var(--fac) 18%,#262c2a);
+  --glow:#b794ff;--glow-on:#17102b;
   --shadow:0 1px 2px rgba(0,0,0,.3); --float:0 8px 28px rgba(0,0,0,.5);
   --must:#f19a90; --must-bg:#3b2320; --opt:#93d3a6; --opt-bg:#1e3326; --dec:#aebcf2; --dec-bg:#222a45; --rem:#b6beba; --rem-bg:#262c2a;
   color-scheme:dark}
@@ -176,7 +179,7 @@ textarea{width:calc(100% - 36px);margin:0 18px 18px;min-height:70px;resize:verti
 .act .btn{flex:1;box-shadow:var(--float)}
 .act .round{box-shadow:var(--float)}
 .navdock{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-.nav{flex:1;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav);padding:5px;border-radius:999px;background:var(--card);box-shadow:var(--float)}
+.nav{flex:1;display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav);padding:5px;border-radius:999px;background:var(--card);box-shadow:var(--float)}
 .nav button{border-radius:999px;display:grid;justify-items:center;align-content:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted);position:relative}
 .nav svg{width:22px;height:22px}
 .nav button[aria-selected="true"]{background:var(--navsel);color:var(--fg)}
@@ -189,12 +192,26 @@ textarea{width:calc(100% - 36px);margin:0 18px 18px;min-height:70px;resize:verti
 .panel .row{display:flex;flex-wrap:wrap;gap:8px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav) + var(--act) + 30px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.scanbtn{display:flex;justify-content:center;align-items:center;position:relative;cursor:pointer;margin-bottom:12px}
+.scanres{margin-bottom:12px}.scanres .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cardq{display:block;width:100%;height:48px;padding:0 18px;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);color:var(--fg);font:inherit;font-size:16px;margin-bottom:10px}
+.cardrow{display:block;width:100%;padding:13px 18px;text-align:left;border-top:1px solid var(--line)}
+.cardrow:first-child{border-top:0}.cardrow:active{background:var(--tint-2)}
+.cardrow b{display:block;font-size:16px}.cardrow span{display:block;margin-top:2px;font-size:13.5px;color:var(--muted)}
+.cardrow.live{background:color-mix(in oklab,var(--glow) 10%,var(--card));box-shadow:inset 4px 0 0 var(--glow),inset 0 0 22px color-mix(in oklab,var(--glow) 24%,transparent)}
+.cardrow .livetag,.sec .livetag{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:999px;background:var(--glow);color:var(--glow-on);font-size:12px;font-weight:800}
+.sec.live{box-shadow:0 0 0 2px var(--glow),0 0 22px color-mix(in oklab,var(--glow) 45%,transparent)}
+.sec.off{opacity:.62}
+.cardback{margin-bottom:8px}
+.cardtxt{padding:0 18px 18px;font-size:15.5px;line-height:1.45}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div id="app"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="cards.js"></script>
 <script>
 const PHASES=[
   {n:0,short:'Підготовка',name:'Підготовка'},
@@ -354,18 +371,19 @@ const ICON={
   inter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
   track:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
   rules:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>',
+  cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="9" y="4" width="11" height="16" rx="2"/><path d="M6 6.5 4 7.2l3.8 13 3.2-.9" stroke-linecap="round"/></svg>',
   log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   back:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>'
 };
-const NAV=[['phase','Фаза'],['track','Трекери'],['rules','Умови'],['log','Лог']];
+const NAV=[['phase','Фаза'],['track','Трекери'],['cards','Карти'],['rules','Умови'],['log','Лог']];
 
 function ink(hex){const n=parseInt(hex.slice(1),16),ch=[n>>16,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});const L=.2126*ch[0]+.7152*ch[1]+.0722*ch[2];return L>.3?'#1d1b17':'#f7f2e8'}
 function emblem(id,size=44){const f=BYID[id],s=ink(f.c);return `<svg class="emb" viewBox="0 0 64 72" width="${size}" height="${Math.round(size*72/64)}" role="img" aria-label="Герб ${f.name}"><path d="M3 3 H61 V33 C61 52 47 64 32 70 C17 64 3 52 3 33 Z" fill="${f.c}" stroke="${s}" stroke-opacity=".35" stroke-width="1.5"/><path d="M7 7 H57 V33 C57 49 45 59 32 65 C19 59 7 49 7 33 Z" fill="none" stroke="${s}" stroke-opacity=".3" stroke-width="1"/>${SYM[id](s,f.c)}</svg>`}
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const KEY='dune-helper-v2';
-const fresh=()=>({fac:null,opps:[],started:false,turn:1,phase:0,spice:0,checks:{},notes:{},count:0,log:[],tab:'phase',closed:{},menu:false,confirm:false});
+const fresh=()=>({fac:null,opps:[],started:false,turn:1,phase:0,spice:0,checks:{},notes:{},count:0,log:[],tab:'phase',cf:'all',cq:'',card:null,closed:{},menu:false,confirm:false});
 let S=fresh();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')return Object.assign(fresh(),v)}catch(e){}return null}
@@ -415,6 +433,104 @@ function sec(key,title,count,body,lead=''){
   const closed=!!S.closed[key];
   return `<section class="sec ${closed?'closed':''}"><header role="button" tabindex="0" data-fold="${key}" aria-expanded="${!closed}">${lead}<h3>${title}</h3>${count!=null?`<span class="cnt">${count}</span>`:''}${ICON.chev}</header><div class="body">${body}</div></section>`}
 
+/* ---------------- Cards ---------------- */
+const CF=[['all','Усі'],['w','Зброя'],['d','Захист'],['s','Особливі'],['x','Непотріб']];
+const cgroup=c=>c.kind==='worthless'?'x':/^(proj|poison|special)$/.test(c.kind)?'w':/^d/.test(c.kind)?'d':'s';
+const cardById=id=>CARDS.find(c=>c.id===id);
+// A passive exists only while its faction is in this game, whether that is you or an opponent.
+const inGame=fac=>S.fac===fac||S.opps.includes(fac);
+const liveOf=c=>(c.passive||[]).filter(p=>inGame(p.fac));
+const liveTag=c=>{const l=liveOf(c);return l.length?`<span class="livetag">Активна: ${l.map(p=>BYID[p.fac].name).join(', ')}</span>`:''};
+function cardRows(){
+  const q=(S.cq||'').trim().toLowerCase();
+  const list=CARDS.filter(c=>(S.cf==='all'||cgroup(c)===S.cf)&&(!q||[c.en,c.ua,...(c.aka||[])].some(n=>n.toLowerCase().includes(q)))).sort((a,b)=>a.en.localeCompare(b.en));
+  return list.length?list.map(c=>`<button class="cardrow ${liveOf(c).length?'live':''}" data-card="${c.id}"><b>${esc(c.en)}</b><span>${esc(c.ua)} · ${esc(KINDS[c.kind])}</span>${liveTag(c)}</button>`).join(''):`<div class="empty">Такої карти немає. Спробуй іншу назву.</div>`;
+}
+function renderCards(){
+  if(S.card&&cardById(S.card))return renderCard(cardById(S.card));
+  return `<div class="title"><h1>Карти</h1><p class="muted">Сфотографуй карту або знайди її за назвою. Фото лишається на твоєму телефоні.</p></div>
+  <label class="btn scanbtn"><input class="vh" type="file" accept="image/*" capture="environment" data-scan ${SCAN.busy?'disabled':''}><span id="scanmsg">${SCAN.busy?esc(SCAN.msg):'Сканувати карту'}</span></label>
+  ${SCAN.err?`<div class="note scanres">${esc(SCAN.err)}</div>`:''}
+  ${SCAN.hits?`<div class="note scanres"><b>Не вдалося точно впізнати.</b> ${SCAN.hits.length?'Може, це одна з цих:':'Спробуй ще раз при кращому світлі, карта має заповнювати кадр.'}<div class="row">${SCAN.hits.map(h=>`<button class="pill" data-card="${h.id}">${esc(h.en)}</button>`).join('')}</div></div>`:''}
+  <input class="cardq" type="search" data-cardq placeholder="Назва англійською або українською" aria-label="Пошук карти" value="${esc(S.cq||'')}">
+  <nav class="pills" aria-label="Тип карти">${CF.map(([k,l])=>`<button class="pill" data-cf="${k}" aria-pressed="${S.cf===k}">${l}</button>`).join('')}</nav>
+  <div class="card" id="cardlist">${cardRows()}</div>`;
+}
+function renderCard(c){
+  const part=(t,x)=>`<section class="sec"><header><h3>${t}</h3></header><p class="cardtxt">${esc(x)}</p></section>`;
+  const others=SCAN.alts&&SCAN.alts.includes(c.id)?SCAN.alts.filter(id=>id!==c.id).map(cardById):[];
+  return `<button class="round cardback" data-act="card-back" aria-label="До списку карт">${ICON.back}</button>
+  <div class="title"><span class="label">${esc(KINDS[c.kind])}</span><h1 style="margin-top:4px">${esc(c.en)}</h1><p class="muted">${esc(c.ua)}</p></div>
+  <div class="stack">
+    ${c.check?`<div class="note"><b>Звір із картою.</b> ${esc(c.check)}</div>`:''}
+    ${part('Що робить',c.does)}${part('Коли грати',c.when)}${part('Після гри',c.after)}
+    ${(c.passive||[]).map(p=>{const on=inGame(p.fac),n=BYID[p.fac].name;return `<section class="sec ${on?'live':'off'}"><header><h3>Пасивка: ${esc(n)}</h3></header><p class="cardtxt">${S.fac===p.fac?'Ти можеш':`Гравець за ${esc(n)} може`} ${esc(p.does)}.${on?'':`<br><span class="muted small">Не діє: ${esc(n)} немає в цій грі.</span>`}</p></section>`}).join('')}
+    <p class="muted small">У колоді: ${Object.entries(c.n).map(([s,k])=>`${SETS[s]}, ${k} шт.`).join('; ')}</p>
+    ${others.length?`<div class="note scanres">Сканер помилився? Може, це:<div class="row">${others.map(o=>`<button class="pill" data-card="${o.id}">${esc(o.en)}</button>`).join('')}</div></div>`:''}
+  </div>`;
+}
+
+/* Scanner: recognition runs on the phone, the photo is never uploaded. */
+let SCAN={busy:false,msg:'',hits:null,err:'',alts:null};
+const nrm=s=>s.toLowerCase().replace(/[015]/g,d=>({0:'o',1:'l',5:'s'}[d])).replace(/[^a-z]+/g,' ').trim();
+function lev(a,b){let p=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const r=[i];for(let j=1;j<=b.length;j++)r[j]=Math.min(p[j]+1,r[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=r}return p[b.length]}
+// Short lines of big text near the top win, so a card is not mistaken for another card its text mentions.
+const sure=h=>h&&h.raw>=.8&&h.title;
+function matchCards(lines){
+  const maxH=Math.max(1,...lines.map(l=>l.h||1));
+  const res=CARDS.map(c=>{
+    let score=0,raw=0,title=false;
+    for(const name of [c.en,...(c.aka||[])]){
+      const nw=nrm(name),k=nw.split(' ').length;
+      lines.forEach((l,li)=>{
+        const w=nrm(l.text).split(' ').filter(Boolean);
+        for(let i=0;i<=w.length-k;i++){
+          const part=w.slice(i,i+k).join(' '),s=1-lev(nw,part)/Math.max(nw.length,part.length);
+          if(s<(nw.length<=5?1:.72))continue;
+          const t=w.length<=k+2,v=s*(.7+.3*(l.h||maxH)/maxH)*(t?1:.8)-li*.002+nw.length*.001;
+          if(v>score){score=v;raw=s;title=t}
+        }
+      });
+    }
+    return {id:c.id,en:c.en,score,raw,title};
+  }).filter(r=>r.score>0).sort((a,b)=>b.score-a.score);
+  return res.slice(0,3);
+}
+let tessP=null;
+function tess(){
+  return tessP||(tessP=new Promise((ok,no)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload=()=>Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')scanMsg(`Читаю карту: ${Math.round(m.progress*100)}%`);else scanMsg('Готую сканер…')}}).then(ok,no);
+    s.onerror=()=>no(new Error('load'));
+    document.head.appendChild(s);
+  }).catch(e=>{tessP=null;throw e}));
+}
+function scanMsg(m){SCAN.msg=m;const el=document.getElementById('scanmsg');if(el)el.textContent=m}
+const ocrLines=async(worker,c)=>((await worker.recognize(c)).data.lines||[]).map(l=>({text:l.text,h:l.bbox?l.bbox.y1-l.bbox.y0:0}));
+// Light text on dark art reads better inverted, so it gets a second pass when the first one finds no title.
+function inverted(c){const o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.drawImage(c,0,0);x.globalCompositeOperation='difference';x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);return o}
+async function readCard(worker,c){
+  const lines=await ocrLines(worker,c);let hits=matchCards(lines);
+  if(!sure(hits[0]))hits=matchCards([...await ocrLines(worker,inverted(c)),...lines]);
+  return hits;
+}
+function loadImg(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>{const k=Math.min(1,1800/Math.max(i.naturalWidth,i.naturalHeight)),c=document.createElement('canvas');c.width=i.naturalWidth*k|0;c.height=i.naturalHeight*k|0;c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};i.src=u})}
+async function scanFile(file){
+  if(!file||SCAN.busy)return;
+  SCAN={busy:true,msg:'Готую сканер…',hits:null,err:'',alts:null};render();
+  try{
+    const [worker,canvas]=await Promise.all([tess(),loadImg(file)]);
+    const hits=await readCard(worker,canvas);
+    SCAN={busy:false,msg:'',hits:null,err:'',alts:null};
+    if(sure(hits[0])){S.card=hits[0].id;SCAN.alts=hits.map(h=>h.id);buzz()}
+    else SCAN.hits=hits;
+  }catch(e){
+    SCAN={busy:false,msg:'',hits:null,alts:null,err:'Сканер не запустився. Для першого запуску потрібен інтернет. Поки що знайди карту за назвою.'};
+  }
+  render();scrollTo(0,0);
+}
+
 function renderGame(){
   const f=BYID[S.fac],over=S.turn>10;
   const top=`<div class="top"><div class="in"><span class="round" aria-hidden="true">${emblem(f.id,28)}</span><div class="who"><b>${f.name}</b><span>${over?'Гру завершено':`Хід ${S.turn} з 10 · ${S.opps.length} суперн.`}</span></div><button class="round" data-act="menu" aria-label="Меню гри" aria-expanded="${S.menu}">⋯</button></div></div>`;
@@ -451,6 +567,7 @@ function renderGame(){
 }
 
 function renderTab(f){
+  if(S.tab==='cards')return renderCards();
   if(S.tab==='inter'){
     return `<div class="title"><h1>Реакції</h1><p class="muted">${esc(f.interNote||'Чужа дія, на яку ти відповідаєш. Натисни, коли вона сталась: запис піде в лог.')}</p></div>
     <div class="card">${f.inter.map((x,i)=>`<button class="react" data-inter="${i}"><b>${esc(x[0])}</b>${x[1]||x[2]!=null?`<span>${esc(x[1])}${x[2]!=null?`${x[1]?' · ':''}фаза ${x[2]}`:''}</span>`:''}${x[3]?condNote(x[3]):''}</button>`).join('')}</div>`}
@@ -474,6 +591,8 @@ function renderTab(f){
 app.addEventListener('click',e=>{
   const b=e.target.closest('button,[data-fold]');if(!b)return;
   const d=b.dataset;
+  if(d.card){S.card=d.card;render();scrollTo(0,0);return}
+  if(d.cf){S.cf=d.cf;render();return}
   if(d.fold){S.closed[d.fold]=!S.closed[d.fold];render();return}
   if(d.pick){S.fac=d.pick;S.opps=S.opps.filter(x=>x!==d.pick);render();document.getElementById('opps')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(d.opp){S.opps=S.opps.includes(d.opp)?S.opps.filter(x=>x!==d.opp):[...S.opps,d.opp];render();return}
@@ -485,6 +604,7 @@ app.addEventListener('click',e=>{
   if(d.go){go(d.go);return}
   switch(d.act){
     case 'start':Object.assign(S,{started:true,turn:1,phase:0,spice:BYID[S.fac].spice,checks:{},notes:{},count:0,log:[],tab:'phase',closed:{},menu:false,confirm:false});addLog(`Гра почалась: ${BYID[S.fac].name} проти ${S.opps.map(x=>BYID[x].name).join(', ')}`);render();scrollTo(0,0);keepAwake();break;
+    case 'card-back':S.card=null;SCAN.alts=null;render();scrollTo(0,0);break;
     case 'menu':S.menu=!S.menu;S.confirm=false;render();break;
     case 'ask-reset':S.confirm=true;render();break;
     case 'noreset':S.confirm=false;render();break;
@@ -494,12 +614,13 @@ app.addEventListener('click',e=>{
 });
 app.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset?.fold){e.preventDefault();e.target.click()}});
 app.addEventListener('change',e=>{
-  const t=e.target;if(!t.dataset.check)return;
+  const t=e.target;if(t.dataset.scan!=null){const f=t.files[0];t.value='';scanFile(f);return}
+  if(!t.dataset.check)return;
   S.checks[ck(S.phase,t.dataset.check)]=t.checked;
   if(t.checked){const it=allOf(groups(S.phase)).find(x=>x.id===t.dataset.check);if(it)addLog('✓ '+it.text);buzz()}
   const y=scrollY;render();scrollTo(0,y);
 });
-app.addEventListener('input',e=>{const t=e.target;if(t.dataset.note!=null){S.notes[t.dataset.note]=t.value;save()}});
+app.addEventListener('input',e=>{const t=e.target;if(t.dataset.cardq!=null){S.cq=t.value;save();document.getElementById('cardlist').innerHTML=cardRows();return}if(t.dataset.note!=null){S.notes[t.dataset.note]=t.value;save()}});
 
 // Swipe the phase cards to change phase.
 let sx=0,sy=0,st=0;
@@ -518,7 +639,7 @@ function go(dir){
   document.querySelector('.pills [aria-current]')?.scrollIntoView({inline:'center',block:'nearest'});
 }
 
-function start(data){const saved=(data&&data.S)?Object.assign(fresh(),data.S):load();if(saved)S=saved;if(!['phase','inter','track','rules','log'].includes(S.tab))S.tab='phase';render();keepAwake()}
+function start(data){const saved=(data&&data.S)?Object.assign(fresh(),data.S):load();if(saved)S=saved;if(!['phase','inter','track','cards','rules','log'].includes(S.tab))S.tab='phase';render();keepAwake()}
 window.claude?.hot?.snapshot?.(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
